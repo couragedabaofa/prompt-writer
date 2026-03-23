@@ -9,7 +9,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[('templates', 'templates'), ('static', 'static'), ('instance', 'instance')],
+    datas=[('templates', 'templates'), ('static', 'static')],
     hiddenimports=[
         'flask',
         'flask_sqlalchemy',

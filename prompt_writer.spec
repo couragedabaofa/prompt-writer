@@ -13,7 +13,6 @@ block_cipher = None
 added_files = [
     ('templates', 'templates'),
     ('static', 'static'),
-    ('instance', 'instance'),
 ]
 
 a = Analysis(
