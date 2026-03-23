@@ -8,7 +8,26 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///prompts.db'
+
+# 使用永久存储路径：~/Library/Application Support/com.promptwriter.app/
+import platform
+if platform.system() == 'Darwin':  # macOS
+    data_dir = os.path.expanduser('~/Library/Application Support/com.promptwriter.app')
+else:  # Windows/Linux
+    data_dir = os.path.join(os.path.expanduser('~'), '.promptwriter')
+
+os.makedirs(data_dir, exist_ok=True)
+db_path = os.path.join(data_dir, 'prompts.db')
+
+# DEBUG: 打印数据库路径信息
+print(f"[DEBUG] Platform: {platform.system()}")
+print(f"[DEBUG] Data directory: {data_dir}")
+print(f"[DEBUG] Database path: {db_path}")
+print(f"[DEBUG] Database exists: {os.path.exists(db_path)}")
+if os.path.exists(db_path):
+    print(f"[DEBUG] Database size: {os.path.getsize(db_path)} bytes")
+
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -34,7 +53,15 @@ prompt_tag = db.Table('prompt_tag',
 
 with app.app_context():
     db.create_all()
-    
+
+    # DEBUG: 打印数据库统计
+    try:
+        prompt_count = Prompt.query.count()
+        tag_count = Tag.query.count()
+        print(f"[DEBUG] After create_all - Prompts: {prompt_count}, Tags: {tag_count}")
+    except Exception as e:
+        print(f"[DEBUG] Error counting records: {e}")
+
     # 初始化标签 - 职场写作者高频使用
     default_tags = [
         {'name': '公文写作', 'color': '#4CAF50'},      # 工作总结、汇报、通知

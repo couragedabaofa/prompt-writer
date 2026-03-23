@@ -99,6 +99,12 @@ def open_browser():
 
 def main():
     """主函数"""
+    print("=" * 50)
+    print("🚀 Prompt Writer 启动中...")
+    print(f"📁 当前工作目录: {os.getcwd()}")
+    print(f"🏠 用户目录: {os.path.expanduser('~')}")
+    print("=" * 50)
+
     # 初始化数据
     init_app()
 
