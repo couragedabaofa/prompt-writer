@@ -5,7 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prompt Writer</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* CSS 变量 - 极简亮白主题 */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --accent-primary: #4f46e5;
+            --accent-hover: #4338ca;
+            --accent-success: #10b981;
+            --accent-danger: #f43f5e;
+            --accent-warning: #f59e0b;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'PingFang SC', 'Hiragino Sans GB', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            font-size: 14px;
+            line-height: 1.6;
+        }
 
         /* 自定义滚动条 */
         ::-webkit-scrollbar {
@@ -23,562 +60,506 @@
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--text-muted);
+            background: var(--border-hover);
         }
 
-        :root {
-            --bg-primary: #0d0d0f;
-            --bg-secondary: #16161a;
-            --bg-tertiary: #1e1e24;
-            --bg-hover: #25252d;
-            --border-color: #2a2a35;
-            --text-primary: #f0f0f5;
-            --text-secondary: #9ca3af;
-            --text-muted: #6b7280;
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
-            --success: #22c55e;
-            --danger: #ef4444;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            height: 100vh;
-            overflow: hidden;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-
-        /* 三栏布局 */
+        /* 应用容器 */
         .app {
-            display: grid;
-            grid-template-columns: 200px 280px 1fr;
-            height: 100vh;
-        }
-
-        /* 左侧标签栏 */
-        .sidebar {
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
         }
 
-        .sidebar-header {
-            padding: 12px 16px;
-            border-bottom: 1px solid var(--border-color);
-            flex-shrink: 0;
+        /* 顶部导航栏 */
+        .top-header {
+            background: var(--bg-primary);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .logo {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-primary);
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent-primary);
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .logo-icon {
-            width: 28px;
-            height: 28px;
-            background: var(--accent);
-            border-radius: 6px;
+        .logo::before {
+            content: "✨";
+            font-size: 24px;
+        }
+
+        .header-actions {
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-
-        .tag-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
-        }
-
-        .tag-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 4px;
-            color: var(--text-secondary);
-        }
-
-        .tag-item:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-
-        .tag-item.active {
-            background: var(--accent);
-            color: white;
-        }
-
-        .tag-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .tag-delete {
-            width: 18px;
-            height: 18px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            color: var(--text-muted);
-            opacity: 0;
-            transition: all 0.2s;
-            margin-left: auto;
-        }
-
-        .tag-item:hover .tag-delete {
-            opacity: 1;
-        }
-
-        .tag-delete:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .tag-name {
-            flex: 1;
-            font-size: 13px;
-        }
-
-        .tag-count {
-            font-size: 11px;
-            opacity: 0.7;
-        }
-
-        .sidebar-footer {
-            padding: 12px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .btn-new-tag {
-            width: 100%;
-            padding: 10px;
-            background: transparent;
-            border: 1px dashed var(--border-color);
-            color: var(--text-secondary);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .btn-new-tag:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-        }
-
-        /* 中间列表栏 */
-        .list-panel {
-            background: var(--bg-primary);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .list-header {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-            flex-shrink: 0;
+            gap: 12px;
         }
 
         .search-box {
             position: relative;
         }
 
-        .search-input {
-            width: 100%;
-            padding: 10px 14px 10px 36px;
-            background: var(--bg-tertiary);
+        .search-box input {
+            width: 280px;
+            padding: 10px 16px 10px 40px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: var(--radius-xl);
+            background: var(--bg-secondary);
             color: var(--text-primary);
-            font-size: 13px;
-            outline: none;
+            font-size: 14px;
             transition: all 0.2s;
         }
 
-        .search-input:focus {
-            border-color: var(--accent);
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: var(--bg-primary);
         }
 
-        .search-icon {
+        .search-box::before {
+            content: "🔍";
             position: absolute;
-            left: 12px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-muted);
             font-size: 14px;
+            opacity: 0.5;
         }
 
-        .list-actions {
-            display: flex;
-            gap: 8px;
-            margin-top: 12px;
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-xl);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .btn-primary {
-            flex: 1;
-            padding: 10px 16px;
-            background: var(--accent);
+            background: var(--accent-primary);
             color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
         }
 
         .btn-primary:hover {
             background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
         }
 
-        .btn-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            border-radius: 8px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .btn-icon:hover {
-            background: var(--bg-hover);
+        .btn-secondary {
+            background: var(--bg-secondary);
             color: var(--text-primary);
+            border: 1px solid var(--border-color);
         }
 
-        .prompt-list {
-            flex: 1;
-            overflow-y: auto;
-            outline: none;
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-hover);
         }
 
-        .prompt-list:focus {
-            background: rgba(99, 102, 241, 0.05);
+        .btn-text {
+            background: transparent;
+            color: var(--accent-primary);
+            padding: 8px 12px;
+            font-size: 13px;
         }
 
-        .prompt-item {
-            padding: 16px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .prompt-item:hover {
+        .btn-text:hover {
             background: var(--bg-secondary);
         }
 
-        .prompt-item.active {
-            background: var(--bg-tertiary);
-            border-left: 3px solid var(--accent);
-        }
-
-        .prompt-header {
+        /* 标签筛选栏 - 移除边框，支持换行 */
+        .tag-filter-bar {
+            padding: 8px 24px 16px;
             display: flex;
-            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: var(--bg-primary);
             align-items: center;
-            margin-bottom: 6px;
         }
 
-        .prompt-title {
-            font-size: 14px;
+        .tag-pill {
+            padding: 6px 14px;
+            border-radius: var(--radius-xl);
+            font-size: 13px;
             font-weight: 500;
-            color: var(--text-primary);
+            cursor: pointer;
             white-space: nowrap;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            position: relative;
+        }
+
+        .tag-pill:hover {
+            background: var(--bg-secondary);
+            border-color: var(--border-hover);
+        }
+
+        .tag-pill.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .tag-pill .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .tag-pill.active .dot {
+            background: rgba(255,255,255,0.8) !important;
+        }
+
+        /* 标签删除按钮 */
+        .tag-delete {
+            margin-left: 4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            opacity: 0;
+            transition: all 0.2s;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .tag-pill:hover .tag-delete {
+            opacity: 1;
+        }
+
+        .tag-pill.active .tag-delete {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .tag-delete:hover {
+            background: var(--accent-danger) !important;
+            color: white;
+        }
+
+        /* 添加标签按钮 */
+        .tag-pill.add-btn {
+            border-style: dashed;
+            color: var(--accent-primary);
+        }
+
+        .tag-pill.add-btn:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-primary);
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            padding: 16px 24px 24px;
+            background: var(--bg-secondary);
+            min-height: calc(100vh - 120px);
+        }
+
+        /* 提示词网格 */
+        .prompt-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* 提示词卡片 */
+        .prompt-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            height: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .prompt-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .prompt-card:hover .card-actions {
+            opacity: 1;
+        }
+
+        .card-header {
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            line-height: 1.4;
             overflow: hidden;
             text-overflow: ellipsis;
-            flex: 1;
+            white-space: nowrap;
         }
 
-        .prompt-actions {
+        .card-preview {
+            flex: 1;
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            word-break: break-word;
+        }
+
+        .card-footer {
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .card-tag {
+            padding: 3px 8px;
+            border-radius: var(--radius-xl);
+            font-size: 11px;
+            font-weight: 500;
+            color: white;
+            background: var(--text-muted);
+        }
+
+        .card-actions {
             display: flex;
             gap: 6px;
             opacity: 0;
             transition: opacity 0.2s;
         }
 
-        .prompt-item:hover .prompt-actions {
-            opacity: 1;
-        }
-
-        .prompt-btn {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
+        .btn-icon {
+            width: 28px;
+            height: 28px;
             border: none;
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 13px;
             transition: all 0.2s;
         }
 
-        .prompt-btn:hover {
-            background: var(--accent);
-            color: white;
+        .btn-icon:hover {
+            background: var(--bg-tertiary);
+            transform: scale(1.05);
         }
 
-        .prompt-btn.delete:hover {
-            background: var(--danger);
+        .btn-icon.copy:hover {
+            background: #dbeafe;
         }
 
-        .prompt-preview {
-            font-size: 12px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+        .btn-icon.delete:hover {
+            background: #fee2e2;
         }
 
-        .prompt-meta {
-            display: flex;
-            gap: 8px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-        }
-
-        .prompt-tag {
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 4px;
-            background: var(--bg-hover);
-            color: var(--text-secondary);
-        }
-
+        /* 空状态 */
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: var(--text-muted);
+            padding: 80px 20px;
+            color: var(--text-secondary);
         }
 
-        .empty-icon {
-            font-size: 48px;
+        .empty-state-icon {
+            font-size: 64px;
             margin-bottom: 16px;
-            opacity: 0.3;
+            opacity: 0.5;
         }
 
-        /* 右侧详情栏 */
-        .detail-panel {
-            background: var(--bg-primary);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .detail-empty {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-        }
-
-        .detail-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .detail-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 16px;
-        }
-
-        .detail-title-area {
-            flex: 1;
-        }
-
-        .detail-title {
-            font-size: 20px;
+        .empty-state-title {
+            font-size: 18px;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 12px;
-            line-height: 1.4;
+            margin-bottom: 8px;
         }
 
-        .detail-tags {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .detail-tag {
-            font-size: 12px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
+        /* 编辑模态层 - 扩大尺寸 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
             display: flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .detail-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn-copy {
-            padding: 10px 20px;
-            background: var(--success);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-copy:hover {
-            background: #16a34a;
-        }
-
-        .btn-copy.copied {
-            background: var(--accent);
-        }
-
-        .btn-edit, .btn-delete {
-            padding: 10px 16px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .btn-edit:hover {
-            background: var(--bg-hover);
-            color: var(--text-primary);
-        }
-
-        .btn-delete:hover {
-            background: var(--danger);
-            border-color: var(--danger);
-            color: white;
-        }
-
-        .detail-body {
-            flex: 1;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
             padding: 20px;
-            overflow-y: auto;
         }
 
-        .content-box {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            font-size: 14px;
-            line-height: 1.8;
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 900px;
+            height: 85vh;
+            max-height: 800px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.3s;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
             color: var(--text-primary);
-            white-space: pre-wrap;
-            font-family: 'SF Mono', Monaco, monospace;
         }
 
-        .content-box .variable {
-            background: var(--accent);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
         }
 
-        /* 编辑模式 */
-        .edit-mode {
+        .modal-close:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+            overflow-y: auto;
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 12px 16px;
-            overflow: hidden;
+            gap: 12px;
         }
 
-        .edit-form-scroll {
+        /* 压缩标题和标签区域 */
+        .form-group.compact {
+            margin-bottom: 0;
+        }
+
+        .form-group.compact .form-label {
+            font-size: 12px;
+            margin-bottom: 6px;
+            text-transform: none;
+            letter-spacing: 0;
+            font-weight: 500;
+        }
+
+        .form-group.expand {
             flex: 1;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
             min-height: 0;
-            padding: 4px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
         }
 
         .form-label {
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
             color: var(--text-secondary);
             margin-bottom: 6px;
         }
 
-        .form-input, .form-textarea {
+        .form-input {
             width: 100%;
-            padding: 12px 16px;
-            background: var(--bg-secondary);
+            padding: 10px 14px;
             border: 1px solid var(--border-color);
-            border-radius: 10px;
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
             color: var(--text-primary);
             font-size: 14px;
-            outline: none;
             transition: all 0.2s;
         }
 
-        .form-input:focus, .form-textarea:focus {
-            border-color: var(--accent);
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: var(--bg-primary);
         }
 
+        /* 扩大编辑区 */
         .form-textarea {
-            min-height: 400px;
-            height: calc(100vh - 360px);
-            max-height: none;
-            font-family: 'SF Mono', Monaco, monospace;
-            line-height: 1.8;
-            resize: vertical;
+            width: 100%;
+            flex: 1;
+            min-height: 300px;
+            padding: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+            line-height: 1.7;
+            resize: none;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background: var(--bg-primary);
         }
 
         .tag-selector {
@@ -588,303 +569,258 @@
         }
 
         .tag-option {
-            padding: 8px 14px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            padding: 5px 12px;
+            border-radius: var(--radius-xl);
+            font-size: 12px;
             cursor: pointer;
-            font-size: 13px;
             transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            border: 2px solid transparent;
+            opacity: 0.6;
         }
 
         .tag-option:hover {
-            background: var(--bg-hover);
+            opacity: 0.8;
         }
 
         .tag-option.selected {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 12px;
-            padding: 12px 16px;
-            flex-shrink: 0;
-            border-top: 1px solid var(--border-color);
-            background: var(--bg-primary);
-            margin: 0 -16px -12px -16px;
-            align-items: center;
-        }
-
-        .save-status {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-left: auto;
-            padding: 4px 8px;
-            min-width: 80px;
-            text-align: right;
-            transition: all 0.3s;
-            font-weight: 500;
-        }
-
-        .save-status.saving {
-            color: var(--accent);
-        }
-
-        .save-status.saved {
-            color: var(--success);
-        }
-
-        .edit-form-scroll .form-group {
-            padding: 0 4px;
-        }
-
-        .edit-form-scroll .form-group:first-child {
-            padding-top: 4px;
-        }
-
-        .btn-save {
-            padding: 12px 24px;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .btn-cancel {
-            padding: 12px 24px;
-            background: transparent;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        /* 变量替换弹窗 */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s;
-        }
-
-        .modal-overlay.active {
             opacity: 1;
-            visibility: visible;
-        }
-
-        .modal {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 80vh;
-            overflow: hidden;
-            transform: scale(0.95);
-            transition: all 0.2s;
-        }
-
-        .modal-overlay.active .modal {
-            transform: scale(1);
-        }
-
-        .modal-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .modal-title {
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .modal-body {
-            padding: 20px;
-            max-height: 50vh;
-            overflow-y: auto;
-        }
-
-        .variable-input-group {
-            margin-bottom: 16px;
-        }
-
-        .variable-label {
-            display: block;
-            font-size: 13px;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
-        }
-
-        .variable-input {
-            width: 100%;
-            padding: 12px 14px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            font-size: 14px;
-            outline: none;
-        }
-
-        .variable-input:focus {
-            border-color: var(--accent);
+            border-color: currentColor;
+            box-shadow: 0 0 0 2px white, 0 0 0 4px currentColor;
         }
 
         .modal-footer {
-            padding: 16px 20px;
+            padding: 16px 24px;
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: flex-end;
             gap: 12px;
+            flex-shrink: 0;
         }
 
         /* Toast 提示 */
         .toast {
             position: fixed;
             bottom: 24px;
-            right: 24px;
-            padding: 14px 24px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-primary);
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text-primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--radius-xl);
             font-size: 14px;
+            font-weight: 500;
             z-index: 2000;
-            transform: translateY(100px);
             opacity: 0;
             transition: all 0.3s;
+            box-shadow: var(--shadow-lg);
         }
 
         .toast.show {
-            transform: translateY(0);
+            transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
 
-        .toast.success {
-            border-color: var(--success);
+        /* 添加标签弹窗 */
+        .tag-input-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
         }
 
-        /* 提示文字 */
-        .hint {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 8px;
+        .tag-input-row input {
+            flex: 1;
         }
 
-        .hint code {
-            background: var(--bg-tertiary);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .color-option:hover,
+        .color-option.selected {
+            border-color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .prompt-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-header {
+                flex-direction: column;
+                gap: 12px;
+                padding: 12px 16px;
+            }
+
+            .search-box input {
+                width: 200px;
+            }
+
+            .main-content {
+                padding: 12px 16px;
+            }
+
+            .prompt-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                max-width: 100%;
+                height: 95vh;
+                max-height: none;
+            }
+
+            .form-textarea {
+                min-height: 200px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- 左侧标签栏 -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <div class="logo-icon">P</div>
-                    <span>Prompt Writer</span>
-                </div>
-            </div>
-            <div class="tag-list" id="tagList">
-                <div class="tag-item active" data-tag="">
-                    <span class="tag-dot" style="background: #6366f1;"></span>
-                    <span class="tag-name">全部提示词</span>
-                    <span class="tag-count" id="allCount">0</span>
-                </div>
-                {% for tag in tags %}
-                <div class="tag-item" data-tag="{{ tag.name }}" data-id="{{ tag.id }}">
-                    <span class="tag-dot" style="background: {{ tag.color }};"></span>
-                    <span class="tag-name">{{ tag.name }}</span>
-                    <span class="tag-count">{{ tag.prompts|length }}</span>
-                    <span class="tag-delete" onclick="event.stopPropagation(); deleteTag({{ tag.id }})" title="删除标签">×</span>
-                </div>
-                {% endfor %}
-            </div>
-            <div class="sidebar-footer">
-                <button class="btn-new-tag" onclick="showNewTagModal()">+ 新建标签</button>
-            </div>
-        </aside>
-
-        <!-- 中间列表栏 -->
-        <div class="list-panel">
-            <div class="list-header">
+        <!-- 顶部导航 -->
+        <header class="top-header">
+            <div class="logo">Prompt Writer</div>
+            <div class="header-actions">
                 <div class="search-box">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" class="search-input" id="searchInput" placeholder="搜索提示词...">
+                    <input type="text" id="searchInput" placeholder="搜索提示词..." oninput="filterPrompts()">
                 </div>
-                <div class="list-actions">
-                    <button class="btn-primary" onclick="startAddPrompt()">
-                        <span>+</span>
-                        新建提示词
-                    </button>
-                    <button class="btn-icon" onclick="exportPrompts()" title="导出">↓</button>
-                    <button class="btn-icon" onclick="document.getElementById('importFile').click()" title="导入">↑</button>
-                    <input type="file" id="importFile" multiple accept=".md" style="display: none;" onchange="importPrompts(this)">
-                </div>
+                <button class="btn btn-secondary" onclick="showImportModal()">📥 导入</button>
+                <button class="btn btn-secondary" onclick="exportPrompts()">📤 导出</button>
+                <button class="btn btn-primary" onclick="createNewPrompt()">+ 新建</button>
             </div>
-            <div class="prompt-list" id="promptList" tabindex="0">
-                {% for prompt in prompts %}
-                <div class="prompt-item" data-id="{{ prompt.id }}">
-                    <div class="prompt-header" onclick="selectPrompt({{ prompt.id }})">
-                        <div class="prompt-title">{{ prompt.title }}</div>
-                        <div class="prompt-actions" onclick="event.stopPropagation()">
-                            <button class="prompt-btn" title="复制" onclick="quickCopy({{ prompt.id }})">📋</button>
-                            <button class="prompt-btn delete" title="删除" onclick="quickDelete({{ prompt.id }})">🗑</button>
-                        </div>
-                    </div>
-                    <div class="prompt-preview" onclick="selectPrompt({{ prompt.id }})">{{ prompt.content[:100] }}{% if prompt.content|length > 100 %}...{% endif %}</div>
-                    <div class="prompt-meta" onclick="selectPrompt({{ prompt.id }})">
-                        {% for tag in prompt.tags %}
-                        <span class="prompt-tag">{{ tag.name }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endfor %}
+        </header>
+
+        <!-- 标签筛选 - 移除边框，支持换行 -->
+        <div class="tag-filter-bar" id="tagFilterBar">
+            <div class="tag-pill active" data-tag="all" onclick="filterByTag('all')">
+                <span>全部</span>
+            </div>
+            {% for tag in tags %}
+            <div class="tag-pill" data-tag="{{ tag.name }}" data-id="{{ tag.id }}">
+                <span class="dot" style="background: {{ tag.color }}"></span>
+                <span onclick="filterByTag('{{ tag.name }}')">{{ tag.name }}</span>
+                <span class="tag-delete" onclick="deleteTag({{ tag.id }}, '{{ tag.name }}', event)" title="删除标签">×</span>
+            </div>
+            {% endfor %}
+            <div class="tag-pill add-btn" onclick="showAddTagModal()">
+                <span>+ 添加标签</span>
             </div>
         </div>
 
-        <!-- 右侧详情栏 -->
-        <div class="detail-panel" id="detailPanel">
-            <div class="detail-empty">
-                <div class="empty-icon">✍️</div>
-                <p>选择一个提示词查看详情</p>
-                <p style="font-size: 12px; margin-top: 8px;">或创建一个新的提示词开始写作</p>
+        <!-- 主内容 -->
+        <main class="main-content">
+            <div class="prompt-grid" id="promptGrid">
+                {% for prompt in prompts %}
+                <div class="prompt-card" data-id="{{ prompt.id }}" data-tags="{% for tag in prompt.tags %}{{ tag.name }},{% endfor %}" onclick="openEditModal({{ prompt.id }})">
+                    <div class="card-header">
+                        <h3 class="card-title">{{ prompt.title }}</h3>
+                    </div>
+                    <div class="card-preview">{{ prompt.content }}</div>
+                    <div class="card-footer">
+                        <div class="card-tags">
+                            {% for tag in prompt.tags %}
+                            <span class="card-tag" style="background: {{ tag.color }}">{{ tag.name }}</span>
+                            {% endfor %}
+                        </div>
+                        <div class="card-actions" onclick="event.stopPropagation()">
+                            <button class="btn-icon copy" onclick="copyPrompt({{ prompt.id }})" title="复制">📋</button>
+                            <button class="btn-icon delete" onclick="deletePrompt({{ prompt.id }})" title="删除">🗑</button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if not prompts %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📝</div>
+                <div class="empty-state-title">还没有提示词</div>
+                <p>点击「新建」按钮创建你的第一个提示词</p>
+            </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <!-- 编辑/新建模态框 - 扩大编辑区 -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle">编辑提示词</div>
+                <button class="modal-close" onclick="closeEditModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group compact">
+                    <label class="form-label">标题</label>
+                    <input type="text" class="form-input" id="editTitle" placeholder="输入提示词标题">
+                </div>
+                <div class="form-group compact">
+                    <label class="form-label">标签</label>
+                    <div class="tag-selector" id="tagSelector">
+                        {% for tag in tags %}
+                        <span class="tag-option" data-id="{{ tag.id }}" style="background: {{ tag.color }}20; color: {{ tag.color }}" onclick="toggleTag(this)">
+                            {{ tag.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="form-group expand">
+                    <label class="form-label">内容</label>
+                    <textarea class="form-textarea" id="editContent" placeholder="输入提示词内容..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+                <button class="btn btn-primary" onclick="savePrompt()">保存</button>
             </div>
         </div>
     </div>
 
-    <!-- 变量替换弹窗 -->
-    <div class="modal-overlay" id="variableModal">
-        <div class="modal">
+    <!-- 添加标签模态框 -->
+    <div class="modal-overlay" id="addTagModal">
+        <div class="modal-content" style="max-width: 400px; height: auto; max-height: 400px;">
             <div class="modal-header">
-                <div class="modal-title">填写变量</div>
+                <div class="modal-title">添加标签</div>
+                <button class="modal-close" onclick="closeAddTagModal()">×</button>
             </div>
-            <div class="modal-body" id="variableInputs">
-                <!-- 动态生成变量输入框 -->
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">标签名称</label>
+                    <input type="text" class="form-input" id="newTagName" placeholder="输入标签名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">选择颜色</label>
+                    <div class="color-picker" id="colorPicker">
+                        <div class="color-option selected" style="background: #4CAF50" data-color="#4CAF50"></div>
+                        <div class="color-option" style="background: #2196F3" data-color="#2196F3"></div>
+                        <div class="color-option" style="background: #FF9800" data-color="#FF9800"></div>
+                        <div class="color-option" style="background: #9C27B0" data-color="#9C27B0"></div>
+                        <div class="color-option" style="background: #00BCD4" data-color="#00BCD4"></div>
+                        <div class="color-option" style="background: #E91E63" data-color="#E91E63"></div>
+                        <div class="color-option" style="background: #3F51B5" data-color="#3F51B5"></div>
+                        <div class="color-option" style="background: #FF5722" data-color="#FF5722"></div>
+                        <div class="color-option" style="background: #607D8B" data-color="#607D8B"></div>
+                        <div class="color-option" style="background: #8BC34A" data-color="#8BC34A"></div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-cancel" onclick="closeVariableModal()">取消</button>
-                <button class="btn-save" onclick="applyVariables()">复制到剪贴板</button>
+                <button class="btn btn-secondary" onclick="closeAddTagModal()">取消</button>
+                <button class="btn btn-primary" onclick="addNewTag()">添加</button>
             </div>
         </div>
     </div>
@@ -893,436 +829,102 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        let currentPrompt = null;
-        let currentPromptContent = '';
-        let editingId = null;
+        let currentEditingId = null;
+        let allTags = [];
+        let selectedColor = '#4CAF50';
+        let autoSaveTimer = null;
+        let isSaving = false;
+        let hasUnsavedChanges = false;
 
-        // 筛选标签
-        document.querySelectorAll('.tag-item').forEach(item => {
-            item.addEventListener('click', function() {
-                document.querySelectorAll('.tag-item').forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-                filterByTag(this.dataset.tag);
-            });
-        });
-
-        // 键盘导航
-        let selectedPromptIndex = -1;
-        const promptList = document.getElementById('promptList');
-
-        function getVisiblePrompts() {
-            return Array.from(document.querySelectorAll('.prompt-item')).filter(item =>
-                item.style.display !== 'none'
-            );
-        }
-
-        function navigatePrompts(direction) {
-            const visiblePrompts = getVisiblePrompts();
-            if (visiblePrompts.length === 0) return;
-
-            if (direction === 'down') {
-                selectedPromptIndex = (selectedPromptIndex + 1) % visiblePrompts.length;
-            } else if (direction === 'up') {
-                selectedPromptIndex = selectedPromptIndex <= 0
-                    ? visiblePrompts.length - 1
-                    : selectedPromptIndex - 1;
-            }
-
-            // 移除所有 active 类
-            visiblePrompts.forEach(item => item.classList.remove('active'));
-
-            // 高亮选中的项
-            const selected = visiblePrompts[selectedPromptIndex];
-            selected.classList.add('active');
-            selected.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-
-            // 加载编辑模式
-            const id = selected.dataset.id;
-            selectPrompt(parseInt(id));
-        }
-
-        promptList.addEventListener('keydown', function(e) {
-            const visiblePrompts = getVisiblePrompts();
-            if (visiblePrompts.length === 0) return;
-
-            if (e.key === 'ArrowDown') {
-                e.preventDefault();
-                navigatePrompts('down');
-            } else if (e.key === 'ArrowUp') {
-                e.preventDefault();
-                navigatePrompts('up');
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                if (selectedPromptIndex >= 0 && selectedPromptIndex < visiblePrompts.length) {
-                    const selected = visiblePrompts[selectedPromptIndex];
-                    const id = selected.dataset.id;
-                    selectPrompt(parseInt(id));
-                }
-            }
-        });
-
-        // 点击搜索框时重置导航
-        document.getElementById('searchInput').addEventListener('focus', function() {
-            selectedPromptIndex = -1;
-        });
-
-        // 搜索
-        document.getElementById('searchInput').addEventListener('input', function() {
-            const keyword = this.value.toLowerCase();
-            document.querySelectorAll('.prompt-item').forEach(item => {
-                const title = item.querySelector('.prompt-title').textContent.toLowerCase();
-                const preview = item.querySelector('.prompt-preview').textContent.toLowerCase();
-                item.style.display = (title.includes(keyword) || preview.includes(keyword)) ? 'block' : 'none';
-            });
-        });
-
-        function filterByTag(tagName) {
-            if (!tagName) {
-                document.querySelectorAll('.prompt-item').forEach(item => item.style.display = 'block');
-                return;
-            }
-            document.querySelectorAll('.prompt-item').forEach(item => {
-                const tags = Array.from(item.querySelectorAll('.prompt-tag')).map(t => t.textContent);
-                item.style.display = tags.includes(tagName) ? 'block' : 'none';
-            });
-        }
-
-        function selectPrompt(id) {
-            document.querySelectorAll('.prompt-item').forEach(item => item.classList.remove('active'));
-            document.querySelector(`.prompt-item[data-id="${id}"]`).classList.add('active');
-
-            fetch(`/get_prompt/${id}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        currentPrompt = data.prompt;
-                        currentPromptContent = data.prompt.content;
-                        editingId = currentPrompt.id;
-                        showEditMode(currentPrompt.title, currentPrompt.content, currentPrompt.tags);
-                    }
-                });
-        }
-
-        function showPromptDetail(prompt) {
-            // 高亮变量
-            const highlightedContent = prompt.content.replace(/\{\{(.*?)\}\}/g, '<span class="variable">{{ '{{' }}$1{{ '}}' }}</span>');
-
-            const tagsHtml = prompt.tags.map(t =>
-                `<span class="detail-tag"><span style="width: 6px; height: 6px; border-radius: 50%; background: ${t.color};"></span>${t.name}</span>`
-            ).join('');
-
-            document.getElementById('detailPanel').innerHTML = `
-                <div class="detail-content">
-                    <div class="detail-header">
-                        <div class="detail-title-area">
-                            <div class="detail-title">${escapeHtml(prompt.title)}</div>
-                            <div class="detail-tags">${tagsHtml}</div>
-                        </div>
-                        <div class="detail-actions">
-                            <button class="btn-copy" onclick="handleCopy()">
-                                <span>📋</span>
-                                <span id="copyText">一键复制</span>
-                            </button>
-                            <button class="btn-edit" onclick="startEdit()">编辑</button>
-                            <button class="btn-delete" onclick="deletePrompt()">删除</button>
-                        </div>
-                    </div>
-                    <div class="detail-body">
-                        <div class="content-box">${highlightedContent}</div>
-                    </div>
-                </div>
-            `;
-        }
-
-        function handleCopy() {
-            if (!currentPrompt) return;
-
-            // 检查是否有变量
-            const variables = currentPromptContent.match(/\{\{(.*?)\}\}/g);
-            if (variables) {
-                openVariableModal();
-            } else {
-                copyToClipboard(currentPromptContent);
-            }
-        }
-
-        function openVariableModal() {
-            const varMatches = currentPromptContent.match(/\{\{(.*?)\}\}/g) || [];
-            const uniqueVars = [...new Set(varMatches.map(v => v.slice(2, -2)))];
-
-            const inputsHtml = uniqueVars.map(v => `
-                <div class="variable-input-group">
-                    <label class="variable-label">${escapeHtml(v)}</label>
-                    <input type="text" class="variable-input" data-var="${escapeHtml(v)}" placeholder="请输入${escapeHtml(v)}...">
-                </div>
-            `).join('');
-
-            document.getElementById('variableInputs').innerHTML = inputsHtml;
-            document.getElementById('variableModal').classList.add('active');
-        }
-
-        function closeVariableModal() {
-            document.getElementById('variableModal').classList.remove('active');
-        }
-
-        function applyVariables() {
-            const values = {};
-            document.querySelectorAll('.variable-input').forEach(input => {
-                values[input.dataset.var] = input.value;
-            });
-
-            fetch('/apply_variables', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    content: currentPromptContent,
-                    values: values
-                })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    copyToClipboard(data.content);
-                    closeVariableModal();
-                }
-            });
-        }
-
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast('已复制到剪贴板');
-                const btn = document.querySelector('.btn-copy');
-                if (btn) {
-                    btn.classList.add('copied');
-                    document.getElementById('copyText').textContent = '已复制';
-                    setTimeout(() => {
-                        btn.classList.remove('copied');
-                        document.getElementById('copyText').textContent = '一键复制';
-                    }, 2000);
-                }
-            });
-        }
-
-        function startAddPrompt() {
-            editingId = null;
-            showEditMode('', '', []);
-        }
-
-        function startEdit() {
-            if (!currentPrompt) return;
-            editingId = currentPrompt.id;
-            showEditMode(currentPrompt.title, currentPrompt.content, currentPrompt.tags);
-        }
-
-        function showEditMode(title, content, selectedTags) {
-            const selectedTagIds = selectedTags.map(t => t.id);
-
+        // 页面加载完成后获取所有标签
+        document.addEventListener('DOMContentLoaded', function() {
             fetch('/get_all_tags')
                 .then(r => r.json())
                 .then(data => {
-                    const tagsHtml = data.tags.map(t => `
-                        <span class="tag-option ${selectedTagIds.includes(t.id) ? 'selected' : ''}" data-id="${t.id}" onclick="toggleTag(this)">
-                            <span style="width: 8px; height: 8px; border-radius: 50%; background: ${t.color};"></span>
-                            ${t.name}
-                        </span>
-                    `).join('');
-
-                    document.getElementById('detailPanel').innerHTML = `
-                        <div class="edit-mode">
-                            <div class="edit-form-scroll">
-                                <div class="form-group">
-                                    <label class="form-label">标题</label>
-                                    <input type="text" class="form-input" id="editTitle" value="${escapeHtml(title)}" placeholder="输入提示词标题...">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">标签</label>
-                                    <div class="tag-selector">${tagsHtml}</div>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">提示词内容</label>
-                                    <textarea class="form-textarea" id="editContent" placeholder="输入提示词内容...&#10;&#10;使用 {{ '{{' }}变量名{{ '}}' }} 语法插入可替换变量，例如：&#10;请帮我写一篇关于 {{ '{{' }}主题{{ '}}' }} 的文章，风格为 {{ '{{' }}风格{{ '}}' }}。">${escapeHtml(content)}</textarea>
-                                    <div class="hint">使用 <code>{{ '{{' }}变量名{{ '}}' }}</code> 语法插入可替换变量，复制时自动弹出输入框</div>
-                                </div>
-                            </div>
-                            <div class="form-actions">
-                                <button class="btn-save" onclick="savePrompt()">保存</button>
-                                <button class="btn-cancel" onclick="cancelEdit()">取消</button>
-                                <span class="save-status" id="saveStatus"></span>
-                            </div>
-                        </div>
-                    `;
-
-                    // 启动自动保存（仅编辑已有提示词时）
-                    if (editingId) {
-                        // 延迟启动，确保DOM已渲染
-                        setTimeout(() => {
-                            startAutoSave();
-                        }, 100);
+                    if (data.success) {
+                        allTags = data.tags;
                     }
                 });
-        }
 
-        // 自动保存相关变量
-        let autoSaveInterval = null;
-        let lastSavedContent = '';
-        let lastSavedTitle = '';
+            // 颜色选择器事件
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.addEventListener('click', function() {
+                    document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedColor = this.dataset.color;
+                });
+            });
 
-        function startAutoSave() {
-            // 清除旧的定时器
-            if (autoSaveInterval) {
-                clearInterval(autoSaveInterval);
-            }
-
-            // 检查输入框是否存在
+            // 绑定自动保存事件
             const titleInput = document.getElementById('editTitle');
             const contentInput = document.getElementById('editContent');
 
-            if (!titleInput || !contentInput) {
-                console.log('AutoSave: Input elements not found, retrying...');
-                // 如果DOM还没准备好，100ms后再试
-                setTimeout(() => startAutoSave(), 100);
-                return;
+            titleInput.addEventListener('input', scheduleAutoSave);
+            contentInput.addEventListener('input', scheduleAutoSave);
+
+            // 标签选择也触发自动保存
+            document.getElementById('tagSelector').addEventListener('click', function(e) {
+                if (e.target.classList.contains('tag-option')) {
+                    scheduleAutoSave();
+                }
+            });
+        });
+
+        // 显示提示
+        function showToast(message, duration = 2500) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), duration);
+        }
+
+        // 显示保存状态
+        function showSaveStatus(message) {
+            const modalTitle = document.getElementById('modalTitle');
+            const originalText = currentEditingId ? '编辑提示词' : '新建提示词';
+            if (message) {
+                modalTitle.textContent = `${originalText} · ${message}`;
+            } else {
+                modalTitle.textContent = originalText;
+            }
+        }
+
+        // 调度自动保存（防抖3秒）
+        function scheduleAutoSave() {
+            hasUnsavedChanges = true;
+            showSaveStatus('待保存...');
+
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
             }
 
-            // 记录初始内容
-            lastSavedTitle = titleInput.value;
-            lastSavedContent = contentInput.value;
-
-            console.log('AutoSave: Started for editingId=' + editingId);
-
-            // 每 3 秒检查并自动保存
-            autoSaveInterval = setInterval(() => {
-                autoSave();
+            autoSaveTimer = setTimeout(() => {
+                doAutoSave();
             }, 3000);
         }
 
-        function autoSave() {
-            if (!editingId) return;
-
-            const titleInput = document.getElementById('editTitle');
-            const contentInput = document.getElementById('editContent');
-
-            if (!titleInput || !contentInput) {
-                console.log('AutoSave: Input elements not found');
-                return;
-            }
-
-            const currentTitle = titleInput.value.trim();
-            const currentContent = contentInput.value.trim();
-
-            console.log('AutoSave: Checking changes...', {currentTitle, lastSavedTitle: lastSavedTitle.substring(0, 20)});
-
-            // 只有当内容有变化时才保存
-            if (currentTitle === lastSavedTitle && currentContent === lastSavedContent) {
-                return;
-            }
-
-            if (!currentTitle || !currentContent) {
-                return;
-            }
-
-            console.log('AutoSave: Saving...');
-
-            // 更新保存状态显示
-            updateSaveStatus('saving');
-
-            // 执行保存
-            fetch(`/update_prompt/${editingId}`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({title: currentTitle, content: currentContent})
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    lastSavedTitle = currentTitle;
-                    lastSavedContent = currentContent;
-                    updateSaveStatus('saved');
-                    console.log('AutoSave: Saved successfully');
-
-                    // 更新当前提示词数据
-                    if (currentPrompt) {
-                        currentPrompt.title = currentTitle;
-                        currentPrompt.content = currentContent;
-                    }
-                }
-            })
-            .catch((err) => {
-                console.error('AutoSave: Error', err);
-                updateSaveStatus('error');
-            });
-        }
-
-        function updateSaveStatus(status) {
-            const statusEl = document.getElementById('saveStatus');
-            if (!statusEl) return;
-
-            statusEl.classList.remove('saving', 'saved');
-
-            if (status === 'saving') {
-                statusEl.textContent = '保存中...';
-                statusEl.classList.add('saving');
-            } else if (status === 'saved') {
-                statusEl.textContent = '已自动保存';
-                statusEl.classList.add('saved');
-
-                // 3 秒后清除状态
-                setTimeout(() => {
-                    if (statusEl.textContent === '已自动保存') {
-                        statusEl.textContent = '';
-                        statusEl.classList.remove('saved');
-                    }
-                }, 3000);
-            } else if (status === 'error') {
-                statusEl.textContent = '保存失败';
-            }
-        }
-
-        function toggleTag(el) {
-            el.classList.toggle('selected');
-        }
-
-        function cancelEdit() {
-            // 停止自动保存
-            if (autoSaveInterval) {
-                clearInterval(autoSaveInterval);
-                autoSaveInterval = null;
-            }
-
-            if (currentPrompt) {
-                showPromptDetail(currentPrompt);
-            } else {
-                document.getElementById('detailPanel').innerHTML = `
-                    <div class="detail-empty">
-                        <div class="empty-icon">✍️</div>
-                        <p>选择一个提示词查看详情</p>
-                        <p style="font-size: 12px; margin-top: 8px;">或创建一个新的提示词开始写作</p>
-                    </div>
-                `;
-            }
-        }
-
-        function savePrompt() {
+        // 执行自动保存
+        function doAutoSave() {
             const title = document.getElementById('editTitle').value.trim();
             const content = document.getElementById('editContent').value.trim();
-            const selectedTags = Array.from(document.querySelectorAll('.tag-option.selected')).map(el => {
-                const tagName = el.textContent.trim();
-                return tagName;
-            });
 
             if (!title || !content) {
-                showToast('请填写标题和内容');
+                showSaveStatus('内容为空');
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('content', content);
-            selectedTags.forEach(t => formData.append('tags', t));
+            if (isSaving) return;
 
-            if (editingId) {
+            isSaving = true;
+            hasUnsavedChanges = false;
+            showSaveStatus('保存中...');
+
+            const selectedTags = Array.from(document.querySelectorAll('.tag-option.selected'))
+                .map(opt => parseInt(opt.dataset.id));
+
+            if (currentEditingId) {
                 // 更新现有提示词
-                fetch(`/update_prompt/${editingId}`, {
+                fetch(`/update_prompt/${currentEditingId}`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({title, content})
@@ -1330,114 +932,231 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        // 更新标签
-                        const selectedTagIds = Array.from(document.querySelectorAll('.tag-option.selected')).map(el => parseInt(el.dataset.id));
-                        return fetch(`/update_prompt_tags/${editingId}`, {
+                        return fetch(`/update_prompt_tags/${currentEditingId}`, {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({tag_ids: selectedTagIds})
+                            body: JSON.stringify({tag_ids: selectedTags})
                         });
                     }
+                    throw new Error(data.error);
                 })
                 .then(() => {
-                    showToast('保存成功');
-                    location.reload();
+                    showSaveStatus('已保存');
+                    setTimeout(() => showSaveStatus(''), 2000);
+                })
+                .catch(err => {
+                    showSaveStatus('保存失败');
+                    hasUnsavedChanges = true;
+                })
+                .finally(() => {
+                    isSaving = false;
                 });
             } else {
-                // 新建提示词
+                // 新建提示词 - 先创建获取ID，后续自动保存变为更新
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('content', content);
+                selectedTags.forEach(tagId => {
+                    const tag = allTags.find(t => t.id === tagId);
+                    if (tag) formData.append('tags', tag.name);
+                });
+
                 fetch('/add_prompt', {
                     method: 'POST',
                     body: formData
                 })
                 .then(r => r.json())
                 .then(data => {
-                    if (data.success) {
-                        showToast('创建成功');
-                        location.reload();
+                    if (data.success && data.prompt_id) {
+                        currentEditingId = data.prompt_id;
+                        showSaveStatus('已创建');
+                        setTimeout(() => showSaveStatus(''), 2000);
+                        // 更新页面标题为编辑模式
+                        document.getElementById('modalTitle').textContent = '编辑提示词';
+                    } else {
+                        throw new Error('创建失败');
                     }
+                })
+                .catch(err => {
+                    showSaveStatus('创建失败');
+                    hasUnsavedChanges = true;
+                })
+                .finally(() => {
+                    isSaving = false;
                 });
             }
         }
 
-        function deletePrompt() {
-            if (!currentPrompt || !confirm('确定要删除这个提示词吗？')) return;
+        // 按标签筛选
+        function filterByTag(tagName) {
+            document.querySelectorAll('.tag-pill').forEach(pill => {
+                if (pill.dataset.tag === tagName) {
+                    pill.classList.add('active');
+                } else {
+                    pill.classList.remove('active');
+                }
+            });
 
-            fetch(`/delete_prompt/${currentPrompt.id}`, {method: 'POST'})
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast('删除成功');
-                        location.reload();
-                    }
-                });
-        }
-
-        function quickCopy(id) {
-            fetch(`/get_prompt/${id}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        const prompt = data.prompt;
-                        const variables = prompt.content.match(/\{\{(.*?)\}\}/g);
-                        if (variables) {
-                            // 有变量，先获取内容再处理
-                            currentPrompt = prompt;
-                            currentPromptContent = prompt.content;
-                            openVariableModal();
-                        } else {
-                            navigator.clipboard.writeText(prompt.content).then(() => {
-                                showToast('已复制到剪贴板');
-                            });
-                        }
-                    }
-                });
-        }
-
-        function quickDelete(id) {
-            if (!confirm('确定要删除这个提示词吗？')) return;
-
-            fetch(`/delete_prompt/${id}`, {method: 'POST'})
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        showToast('删除成功');
-                        location.reload();
-                    }
-                });
-        }
-
-        function exportPrompts() {
-            window.location.href = '/export_prompts';
-        }
-
-        function importPrompts(input) {
-            const files = input.files;
-            if (!files.length) return;
-
-            const formData = new FormData();
-            for (let f of files) {
-                formData.append('files', f);
-            }
-
-            fetch('/import_prompts', {
-                method: 'POST',
-                body: formData
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    showToast(`成功导入 ${data.imported} 个提示词`);
-                    location.reload();
+            const cards = document.querySelectorAll('.prompt-card');
+            cards.forEach(card => {
+                if (tagName === 'all' || card.dataset.tags.includes(tagName)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
                 }
             });
         }
 
-        function showNewTagModal() {
-            const name = prompt('输入新标签名称：');
-            if (!name) return;
+        // 搜索筛选
+        function filterPrompts() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const cards = document.querySelectorAll('.prompt-card');
+
+            cards.forEach(card => {
+                const title = card.querySelector('.card-title').textContent.toLowerCase();
+                const preview = card.querySelector('.card-preview').textContent.toLowerCase();
+
+                if (title.includes(keyword) || preview.includes(keyword)) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // 打开编辑模态框
+        function openEditModal(promptId) {
+            currentEditingId = promptId;
+            document.getElementById('modalTitle').textContent = '编辑提示词';
+
+            fetch(`/get_prompt/${promptId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        const prompt = data.prompt;
+                        document.getElementById('editTitle').value = prompt.title;
+                        document.getElementById('editContent').value = prompt.content;
+
+                        document.querySelectorAll('.tag-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+
+                        prompt.tags.forEach(tag => {
+                            const opt = document.querySelector(`.tag-option[data-id="${tag.id}"]`);
+                            if (opt) opt.classList.add('selected');
+                        });
+
+                        document.getElementById('editModal').classList.add('active');
+                    }
+                });
+        }
+
+        // 新建提示词
+        function createNewPrompt() {
+            currentEditingId = null;
+            document.getElementById('modalTitle').textContent = '新建提示词';
+            document.getElementById('editTitle').value = '';
+            document.getElementById('editContent').value = '';
+
+            document.querySelectorAll('.tag-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        // 关闭编辑模态框
+        function closeEditModal() {
+            if (hasUnsavedChanges && !isSaving) {
+                if (!confirm('有未保存的更改，确定要关闭吗？')) {
+                    return;
+                }
+            }
+
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = null;
+            }
+
+            document.getElementById('editModal').classList.remove('active');
+            currentEditingId = null;
+            hasUnsavedChanges = false;
+            isSaving = false;
+            showSaveStatus('');
+        }
+
+        // 切换标签选择
+        function toggleTag(element) {
+            element.classList.toggle('selected');
+        }
+
+        // 保存提示词（手动保存，立即执行）
+        function savePrompt() {
+            if (autoSaveTimer) {
+                clearTimeout(autoSaveTimer);
+                autoSaveTimer = null;
+            }
+            doAutoSave();
+            if (!hasUnsavedChanges && !isSaving) {
+                setTimeout(() => {
+                    closeEditModal();
+                    location.reload();
+                }, 500);
+            }
+        }
+
+        // 复制提示词
+        function copyPrompt(promptId) {
+            fetch(`/get_prompt/${promptId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        navigator.clipboard.writeText(data.prompt.content)
+                            .then(() => showToast('已复制到剪贴板'))
+                            .catch(() => showToast('复制失败'));
+                    }
+                });
+        }
+
+        // 删除提示词
+        function deletePrompt(promptId) {
+            if (!confirm('确定要删除这个提示词吗？')) return;
+
+            fetch(`/delete_prompt/${promptId}`, {method: 'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('删除成功');
+                        location.reload();
+                    } else {
+                        showToast('删除失败: ' + data.error);
+                    }
+                });
+        }
+
+        // 显示添加标签模态框
+        function showAddTagModal() {
+            document.getElementById('newTagName').value = '';
+            document.getElementById('addTagModal').classList.add('active');
+        }
+
+        // 关闭添加标签模态框
+        function closeAddTagModal() {
+            document.getElementById('addTagModal').classList.remove('active');
+        }
+
+        // 添加新标签
+        function addNewTag() {
+            const name = document.getElementById('newTagName').value.trim();
+
+            if (!name) {
+                showToast('请输入标签名称');
+                return;
+            }
 
             const formData = new FormData();
             formData.append('tag_name', name);
+            formData.append('color', selectedColor);
 
             fetch('/add_tag', {
                 method: 'POST',
@@ -1446,44 +1165,86 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    showToast('标签创建成功');
-                    location.reload();
-                }
-            });
-        }
-
-        function deleteTag(tagId) {
-            if (!confirm('确定要删除这个标签吗？')) return;
-
-            fetch(`/delete_tag/${tagId}`, {
-                method: 'POST'
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('标签已删除');
+                    showToast('标签添加成功');
                     location.reload();
                 } else {
-                    showToast('删除失败');
+                    showToast('添加失败: ' + (data.error || '未知错误'));
                 }
-            });
+            })
+            .catch(err => showToast('添加失败'));
         }
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+        // 删除标签
+        function deleteTag(tagId, tagName, event) {
+            event.stopPropagation();
+            if (!confirm(`确定要删除标签「${tagName}」吗？\n该标签将从所有提示词中移除。`)) return;
+
+            fetch(`/delete_tag/${tagId}`, {method: 'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('标签已删除');
+                        location.reload();
+                    } else {
+                        showToast('删除失败: ' + data.error);
+                    }
+                });
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        // 导出提示词
+        function exportPrompts() {
+            window.location.href = '/export_prompts';
+            showToast('正在导出...');
         }
 
-        // 更新总数
-        document.getElementById('allCount').textContent = {{ prompts|length }};
+        // 显示导入模态框
+        function showImportModal() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.md';
+            input.multiple = true;
+            input.onchange = function(e) {
+                const files = e.target.files;
+                if (files.length === 0) return;
+
+                const formData = new FormData();
+                for (let file of files) {
+                    formData.append('files', file);
+                }
+
+                fetch('/import_prompts', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(`成功导入 ${data.imported} 个提示词`);
+                        location.reload();
+                    } else {
+                        showToast('导入失败: ' + data.error);
+                    }
+                });
+            };
+            input.click();
+        }
+
+        // 点击模态框外部关闭
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeEditModal();
+        });
+
+        document.getElementById('addTagModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddTagModal();
+        });
+
+        // ESC 键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeEditModal();
+                closeAddTagModal();
+            }
+        });
     </script>
 </body>
 </html>

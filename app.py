@@ -186,10 +186,10 @@ def add_prompt():
     title = request.form.get('title')
     content = request.form.get('content')
     tag_names = request.form.getlist('tags')
-    
+
     if title and content:
         prompt = Prompt(title=title, content=content)
-        
+
         for tag_name in tag_names:
             tag = Tag.query.filter_by(name=tag_name).first()
             if not tag:
@@ -199,10 +199,10 @@ def add_prompt():
                 tag = Tag(name=tag_name, color=color)
                 db.session.add(tag)
             prompt.tags.append(tag)
-        
+
         db.session.add(prompt)
         db.session.commit()
-        return jsonify({'success': True})
+        return jsonify({'success': True, 'prompt_id': prompt.id})
     return jsonify({'success': False})
 
 @app.route('/get_all_tags', methods=['GET'])
