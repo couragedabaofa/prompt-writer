@@ -1,0 +1,3 @@
+([('Prompt Writer',
+   '/Users/james/00Tool/Prompt MS/dist/Prompt Writer',
+   'EXECUTABLE')],)

@@ -1,0 +1,87 @@
+name: Build Prompt Writer
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest]
+        python-version: ['3.12']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install flask flask-sqlalchemy waitress pyinstaller pillow
+
+    - name: Generate icon (macOS)
+      if: matrix.os == 'macos-latest'
+      run: python create_icon.py
+
+    - name: Generate icon (Windows)
+      if: matrix.os == 'windows-latest'
+      run: python create_icon.py
+      shell: cmd
+
+    - name: Build macOS app
+      if: matrix.os == 'macos-latest'
+      run: |
+        pyinstaller prompt_writer.spec --clean --noconfirm
+        cd dist
+        zip -r "Prompt-Writer-macOS.zip" "Prompt Writer.app"
+
+    - name: Build Windows app
+      if: matrix.os == 'windows-latest'
+      run: |
+        pyinstaller prompt_writer_windows.spec --clean --noconfirm
+        cd dist
+        7z a "Prompt-Writer-Windows.zip" "Prompt Writer"
+      shell: cmd
+
+    - name: Upload macOS artifact
+      if: matrix.os == 'macos-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Prompt-Writer-macOS
+        path: dist/Prompt-Writer-macOS.zip
+
+    - name: Upload Windows artifact
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v4
+      with:
+        name: Prompt-Writer-Windows
+        path: dist/Prompt-Writer-Windows.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          Prompt-Writer-macOS/Prompt-Writer-macOS.zip
+          Prompt-Writer-Windows/Prompt-Writer-Windows.zip
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
