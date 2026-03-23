@@ -51,7 +51,7 @@ jobs:
         mkdir instance
         pyinstaller prompt_writer_windows.spec --clean --noconfirm
         cd dist
-        7z a "Prompt-Writer-Windows.zip" "Prompt Writer"
+        7z a "Prompt-Writer-Windows.zip" "Prompt Writer.exe"
       shell: cmd
 
     - name: Upload macOS artifact
