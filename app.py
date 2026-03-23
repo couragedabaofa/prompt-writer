@@ -58,63 +58,9 @@ with app.app_context():
     try:
         prompt_count = Prompt.query.count()
         tag_count = Tag.query.count()
-        print(f"[DEBUG] After create_all - Prompts: {prompt_count}, Tags: {tag_count}")
+        print(f"[DEBUG] Database loaded - Prompts: {prompt_count}, Tags: {tag_count}")
     except Exception as e:
         print(f"[DEBUG] Error counting records: {e}")
-
-    # 初始化标签 - 职场写作者高频使用
-    default_tags = [
-        {'name': '公文写作', 'color': '#4CAF50'},      # 工作总结、汇报、通知
-        {'name': '邮件沟通', 'color': '#2196F3'},      # 商务邮件、跟进邮件
-        {'name': '创意文案', 'color': '#FF9800'},      # 营销文案、标题、Slogan
-        {'name': '编辑润色', 'color': '#9C27B0'},      # 改写、精简、校对
-        {'name': '会议效率', 'color': '#00BCD4'},      # 纪要、议程、跟进
-        {'name': '社媒运营', 'color': '#E91E63'},      # 小红书、LinkedIn、朋友圈
-        {'name': '报告分析', 'color': '#3F51B5'},      # 数据报告、调研分析
-        {'name': '求职简历', 'color': '#FF5722'},      # 简历、求职信、面试
-        {'name': '翻译双语', 'color': '#607D8B'},      # 中英互译、本地化
-        {'name': '知识整理', 'color': '#8BC34A'},      # 读书笔记、资料提炼
-    ]
-    
-    for tag_data in default_tags:
-        if not Tag.query.filter_by(name=tag_data['name']).first():
-            tag = Tag(name=tag_data['name'], color=tag_data['color'])
-            db.session.add(tag)
-    
-    # 初始化SEO相关提示词
-    seo_prompts = [
-        {
-            'title': '生成Meta description',
-            'content': 'Generate 5 unique meta descriptions, of a maximum of 150 characters, for the following text. The entire conversation and instructions should be provided in Chinese. They should be catchy with a call to action, including the term [主要关键词] in them: [页面内容]',
-            'tags': ['SEO']
-        },
-        {
-            'title': '生成常见问答',
-            'content': 'Generate a list of 10 frequently asked questions based on the following content: [内容]. The entire conversation and instructions should be provided in Chinese.',
-            'tags': ['SEO']
-        },
-        {
-            'title': '生成热门问题',
-            'content': 'Generate a list of 10 popular questions related to [关键词], that are relevant for [受众]. The entire conversation and instructions should be provided in Chinese.',
-            'tags': ['SEO']
-        },
-        {
-            'title': '文本改写',
-            'content': 'Rephrase the following paragraph with Chinese in 5 different ways, to avoid repetition, while keeping its meaning: [修改文本]',
-            'tags': ['SEO']
-        }
-    ]
-    
-    for prompt_data in seo_prompts:
-        if not Prompt.query.filter_by(title=prompt_data['title']).first():
-            prompt = Prompt(title=prompt_data['title'], content=prompt_data['content'])
-            for tag_name in prompt_data['tags']:
-                tag = Tag.query.filter_by(name=tag_name).first()
-                if tag:
-                    prompt.tags.append(tag)
-            db.session.add(prompt)
-    
-    db.session.commit()
 
 @app.route('/')
 def index():

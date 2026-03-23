@@ -29,27 +29,7 @@ def init_app():
     """初始化应用数据和数据库"""
     with app.app_context():
         db.create_all()
-
-        # 初始化标签（如果不存在）
-        default_tags = [
-            {'name': '公文写作', 'color': '#4CAF50'},
-            {'name': '邮件沟通', 'color': '#2196F3'},
-            {'name': '创意文案', 'color': '#FF9800'},
-            {'name': '编辑润色', 'color': '#9C27B0'},
-            {'name': '会议效率', 'color': '#00BCD4'},
-            {'name': '社媒运营', 'color': '#E91E63'},
-            {'name': '报告分析', 'color': '#3F51B5'},
-            {'name': '求职简历', 'color': '#FF5722'},
-            {'name': '翻译双语', 'color': '#607D8B'},
-            {'name': '知识整理', 'color': '#8BC34A'},
-        ]
-
-        for tag_data in default_tags:
-            if not Tag.query.filter_by(name=tag_data['name']).first():
-                tag = Tag(name=tag_data['name'], color=tag_data['color'])
-                db.session.add(tag)
-
-        db.session.commit()
+        print("[DEBUG] Database initialized successfully")
 
 
 # License check decorator
