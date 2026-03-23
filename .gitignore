@@ -1,0 +1,21 @@
+# 个人数据
+instance/
+*.db
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 虚拟环境
+venv/
+.venv/
+
+# 打包输出
+dist/
+build/
+*.spec.bak
+
+# 系统文件
+.DS_Store
+Thumbs.db
