@@ -913,78 +913,11 @@
                 return;
             }
 
-            if (isSaving) return;
-
-            isSaving = true;
-            hasUnsavedChanges = false;
-            showSaveStatus('保存中...');
-
             const selectedTags = Array.from(document.querySelectorAll('.tag-option.selected'))
                 .map(opt => parseInt(opt.dataset.id));
 
-            if (currentEditingId) {
-                // 更新现有提示词
-                fetch(`/update_prompt/${currentEditingId}`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({title, content})
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        return fetch(`/update_prompt_tags/${currentEditingId}`, {
-                            method: 'POST',
-                            headers: {'Content-Type': 'application/json'},
-                            body: JSON.stringify({tag_ids: selectedTags})
-                        });
-                    }
-                    throw new Error(data.error);
-                })
-                .then(() => {
-                    showSaveStatus('已保存');
-                    setTimeout(() => showSaveStatus(''), 2000);
-                })
-                .catch(err => {
-                    showSaveStatus('保存失败');
-                    hasUnsavedChanges = true;
-                })
-                .finally(() => {
-                    isSaving = false;
-                });
-            } else {
-                // 新建提示词 - 先创建获取ID，后续自动保存变为更新
-                const formData = new FormData();
-                formData.append('title', title);
-                formData.append('content', content);
-                selectedTags.forEach(tagId => {
-                    const tag = allTags.find(t => t.id === tagId);
-                    if (tag) formData.append('tags', tag.name);
-                });
-
-                fetch('/add_prompt', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success && data.prompt_id) {
-                        currentEditingId = data.prompt_id;
-                        showSaveStatus('已创建');
-                        setTimeout(() => showSaveStatus(''), 2000);
-                        // 更新页面标题为编辑模式
-                        document.getElementById('modalTitle').textContent = '编辑提示词';
-                    } else {
-                        throw new Error('创建失败');
-                    }
-                })
-                .catch(err => {
-                    showSaveStatus('创建失败');
-                    hasUnsavedChanges = true;
-                })
-                .finally(() => {
-                    isSaving = false;
-                });
-            }
+            // 自动保存不关闭编辑框
+            performSave(title, content, selectedTags, false);
         }
 
         // 按标签筛选
@@ -1090,18 +1023,99 @@
             element.classList.toggle('selected');
         }
 
-        // 保存提示词（手动保存，立即执行）
+        // 保存提示词（手动保存，立即执行并关闭）
         function savePrompt() {
             if (autoSaveTimer) {
                 clearTimeout(autoSaveTimer);
                 autoSaveTimer = null;
             }
-            doAutoSave();
-            if (!hasUnsavedChanges && !isSaving) {
-                setTimeout(() => {
-                    closeEditModal();
-                    location.reload();
-                }, 500);
+
+            const title = document.getElementById('editTitle').value.trim();
+            const content = document.getElementById('editContent').value.trim();
+
+            if (!title || !content) {
+                showToast('请填写标题和内容');
+                return;
+            }
+
+            const selectedTags = Array.from(document.querySelectorAll('.tag-option.selected'))
+                .map(opt => parseInt(opt.dataset.id));
+
+            // 立即执行保存
+            performSave(title, content, selectedTags, true);
+        }
+
+        // 执行保存（内部函数）
+        function performSave(title, content, selectedTags, shouldClose) {
+            if (isSaving) return;
+
+            isSaving = true;
+            showSaveStatus('保存中...');
+
+            if (currentEditingId) {
+                // 更新现有提示词
+                fetch(`/update_prompt/${currentEditingId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({title, content})
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        return fetch(`/update_prompt_tags/${currentEditingId}`, {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({tag_ids: selectedTags})
+                        });
+                    }
+                    throw new Error(data.error);
+                })
+                .then(() => {
+                    showToast('保存成功');
+                    if (shouldClose) {
+                        closeEditModal();
+                        location.reload();
+                    } else {
+                        showSaveStatus('已保存');
+                        setTimeout(() => showSaveStatus(''), 2000);
+                    }
+                })
+                .catch(err => {
+                    showToast('保存失败: ' + err.message);
+                    showSaveStatus('保存失败');
+                })
+                .finally(() => {
+                    isSaving = false;
+                });
+            } else {
+                // 新建提示词
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('content', content);
+                selectedTags.forEach(tagId => {
+                    const tag = allTags.find(t => t.id === tagId);
+                    if (tag) formData.append('tags', tag.name);
+                });
+
+                fetch('/add_prompt', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('创建成功');
+                        closeEditModal();
+                        location.reload();
+                    } else {
+                        throw new Error('创建失败');
+                    }
+                })
+                .catch(err => {
+                    showToast('创建失败');
+                    showSaveStatus('创建失败');
+                    isSaving = false;
+                });
             }
         }
 
