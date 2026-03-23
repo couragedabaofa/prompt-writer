@@ -43,7 +43,7 @@ def create_icon():
 
     # 保存为 PNG
     img.save('icon.png')
-    print("✅ 已生成 icon.png")
+    print("[OK] Generated icon.png")
 
     # 为 macOS 创建 .icns（需要多个尺寸）
     os.makedirs('icon.iconset', exist_ok=True)
@@ -56,13 +56,13 @@ def create_icon():
             resized2x = img.resize((s*2, s*2), Image.LANCZOS)
             resized2x.save(f'icon.iconset/icon_{s}x{s}@2x.png')
 
-    print("✅ 已生成 icon.iconset/")
+    print("[OK] Generated icon.iconset/")
 
     # 使用 iconutil 生成 .icns（仅 macOS）
     import platform
     if platform.system() == 'Darwin':
         os.system('iconutil -c icns icon.iconset -o icon.icns')
-        print("✅ 已生成 icon.icns")
+        print("[OK] Generated icon.icns")
         # 清理临时文件
         import shutil
         shutil.rmtree('icon.iconset')
@@ -70,7 +70,7 @@ def create_icon():
     else:
         # Windows 使用 .ico
         img.save('icon.ico', format='ICO', sizes=[(16,16), (32,32), (48,48), (64,64), (128,128), (256,256)])
-        print("✅ 已生成 icon.ico")
+        print("[OK] Generated icon.ico")
 
 if __name__ == '__main__':
     create_icon()
